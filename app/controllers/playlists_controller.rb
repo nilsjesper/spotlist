@@ -135,7 +135,7 @@ class PlaylistsController < ApplicationController
                              'Keywords'    =>  results['track']['name'].force_encoding('utf-8') + "  " + results['track']['artist']['name'].force_encoding('utf-8')
                             }
 
-      song_file = Hash.from_xml(res.body)
+      song_file = Hash.from_xml(res.body.force_encoding('utf-8'))
       num_found = song_file['ItemSearchResponse']['Items']['TotalResults']
 
 
