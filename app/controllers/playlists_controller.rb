@@ -1,3 +1,4 @@
+# encoding: utf-8
 class PlaylistsController < ApplicationController
   # GET /playlists
   # GET /playlists.json
@@ -94,12 +95,12 @@ class PlaylistsController < ApplicationController
     @output = []
 
     params['playlists'].each_line do |line|
-      sleep(1)
+      sleep(1) #throttle to avoid hitting the max limit...
       
       track_id = line.strip.split('/').last
 
       #contact spotify's API
-      @output << {'spotify' => nil, 'amazon' => nil}
+      @output << {'spotify' => nil, 'amazon' => []}
 
       url = "http://ws.spotify.com/lookup/1/?uri=spotify:track:#{track_id}"
       @output.last['url'] = url
@@ -131,7 +132,7 @@ class PlaylistsController < ApplicationController
       res = req.get query: { 'Operation'   => 'ItemSearch',
                              'SearchIndex' => 'MP3Downloads',
                              'ResponseGroup' => 'ItemAttributes,Tracks,Images',
-                             'Keywords'    =>  results['track']['name'] + "  " + results['track']['artist']['name']  + " " + results['track']['album']['name']
+                             'Keywords'    =>  results['track']['name'] + "  " + results['track']['artist']['name']
                             }
 
       song_file = Hash.from_xml(res.body)
@@ -140,13 +141,12 @@ class PlaylistsController < ApplicationController
 
      unless  song_file['ItemSearchResponse']['Items']['Item'].nil?
 
+        @output.last['amazon'] ||= []
 
         if song_file['ItemSearchResponse']['Items']['Item'].kind_of?(Array)
-          @output.last['amazon'] = song_file['ItemSearchResponse']['Items']['Item'].last
-          puts "array"
-        else
           @output.last['amazon'] = song_file['ItemSearchResponse']['Items']['Item']
-          puts "not array "
+        else
+          @output.last['amazon'] << song_file['ItemSearchResponse']['Items']['Item']
         end
       else
           puts "not found by amazon #{results['track']['name'] }"
