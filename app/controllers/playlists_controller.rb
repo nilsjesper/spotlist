@@ -94,9 +94,14 @@ class PlaylistsController < ApplicationController
 
     @output = []
 
+    i = 0;
     params['playlists'].each_line do |line|
-      sleep(1) #throttle to avoid hitting the max limit...
-      
+
+      if i % 10
+        sleep(1) #throttle to avoid hitting the max limit...
+      end
+      i+=1
+        
       track_id = line.strip.split('/').last
 
       #contact spotify's API
@@ -144,7 +149,7 @@ class PlaylistsController < ApplicationController
         @output.last['amazon'] ||= []
 
         if song_file['ItemSearchResponse']['Items']['Item'].kind_of?(Array)
-          @output.last['amazon'] = song_file['ItemSearchResponse']['Items']['Item']
+          @output.last['amazon'] << song_file['ItemSearchResponse']['Items']['Item'].first
         else
           @output.last['amazon'] << song_file['ItemSearchResponse']['Items']['Item']
         end

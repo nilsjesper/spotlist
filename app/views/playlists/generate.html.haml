@@ -20,13 +20,13 @@
       %table(border="1")
         %tr
           %th
-            Title
+            Spotify Track
           %th
-            Artist
+            Cover
           %th
-            Album
+            Amazon Equivalent
           %th
-            Detail Link
+            Detail Page
           %th
             Purchase
           - @theout.each do |track|
@@ -36,16 +36,17 @@
                   - if track['spotify'].nil?
                     Non Spotify Track
                   - else
-                    = track['spotify']['track']['name']
-                  %td
-                    - if track['spotify'].nil?
-                      n/a
-                    - else
-                      = track['spotify']['track']['artist']['name']
+                    = track['spotify']['track']['artist']['name'] + "- "  + track['spotify']['track']['name']
                   - begin
                     - if album && album.length > 0
                       %td
-                        = "#{album['ItemAttributes']['Title']}"
+                        = image_tag(album['SmallImage']['URL'])
+
+                      %td
+                        /= "#{album['ItemAttributes']['Title']}"
+                        = "#{album['ItemAttributes']['Creator']} - #{album['ItemAttributes']['Title']}"
+                        /= pp album.keys
+                        /= pp album['ItemAttributes']
                       %td
                         %a{href:album['DetailPageURL']}
                           See on Amazon
@@ -57,12 +58,11 @@
                         %i
                           Not found in on Amazon
                       %td
-                      %td
                   -rescue
-                    - binding.pry
-                  / %td
-                  /   %pre
-                  /     =track
+                    //- binding.pry
+                  %td
+                    %pre
+                      /=track
 
         
       
