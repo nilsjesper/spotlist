@@ -1,0 +1,72 @@
+!!! 5
+%html
+  %head
+    %title= "Spotlister"
+    %meta{ :content => "", :name => "description" }
+    %meta{ :content => "", :name => "author" }
+    %meta{ :content => "3 days", :name => "revisit-after" }
+    %link{ :href => "http://creativecommons.org/licenses/by/3.0/", :rel => "license", :title => "Creative Commons Attribution 3.0 Unported License" }
+    %link{ :href => "/css/screen.css", :media => "screen", :rel => "stylesheet" }
+  %body
+    %header
+
+    %section
+      %article
+        %header
+          %h2= "Spotify Playlists, now with purchase links."
+          %p  
+            Click on your purchase links below.
+
+    %section
+      %table(border="1")
+        %tr
+          %th
+            Title
+          %th
+            Artist
+          %th
+            Album
+          %th
+            Detail Link
+          %th
+            Purchase
+        - @theout.each do |track|
+          %tr
+            %td
+              - if track['spotify'].nil?
+                Non Spotify Track
+              - else
+                = track['spotify']['track']['name']
+              %td
+                - if track['spotify'].nil?
+                  n/a
+                - else
+                  = track['spotify']['track']['artist']['name']
+              - begin
+                - if track['amazon'] && track['amazon'].length > 0
+                  %td
+                    = "#{track['amazon']['ItemAttributes']['Title']}"
+                  %td
+                    %a{href:track['amazon']['DetailPageURL']}
+                      See on Amazon
+                  %td
+                    %a{href:"https://www.amazon.com/gp/dmusic/order/handle-buy-box-bm.html/ref=dm_sp_trk_buy?ie=UTF8&asin.0=#{track['amazon']['ASIN']}&initial=1&isTrack=1&session-id=191-2236278-8965562&tryInPlace=0"}
+                      Purchase                    
+                - else
+                  %td
+                    %i
+                      Not found in on Amazon
+                  %td
+                  %td
+              -rescue
+                - binding.pry
+              / %td
+              /   %pre
+              /     =track
+
+        
+      
+      %footer
+        %p
+          Copyright 2012 Martin Olson
+          %a{ :href=>'mailto:martin@robotpolishers.com'} Get In Touch

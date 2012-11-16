@@ -1,0 +1,29 @@
+!!! 5
+%html
+  %head
+    %title= "Spotlister"
+    %meta{ :content => "", :name => "description" }
+    %meta{ :content => "", :name => "author" }
+    %meta{ :content => "3 days", :name => "revisit-after" }
+    %link{ :href => "http://creativecommons.org/licenses/by/3.0/", :rel => "license", :title => "Creative Commons Attribution 3.0 Unported License" }
+    %link{ :href => "/css/screen.css", :media => "screen", :rel => "stylesheet" }
+  %body
+    %header
+
+    %section
+      %article
+        %header
+          %h2= "Spotify Playlists, now with purchase links."
+          %p  
+            Just copy and paste a spotify playlist into the box below.  Might take a few minutes depending on the size of your list.
+    %section
+      %form(action="./generate" method="post")
+        %textarea(name="playlists" style="width:450px;height:500px;")
+        %div
+          %button.btn.btn-primary(type="submit" style="vertical-align:top") Make Playlist!
+        
+      
+      %footer
+        %p
+          Copyright 2012 Martin Olson
+          %a{ :href=>'mailto:martin@robotpolishers.com'} Get In Touch
