@@ -132,7 +132,7 @@ class PlaylistsController < ApplicationController
       res = req.get query: { 'Operation'   => 'ItemSearch',
                              'SearchIndex' => 'MP3Downloads',
                              'ResponseGroup' => 'ItemAttributes,Tracks,Images',
-                             'Keywords'    =>  results['track']['name'] + "  " + results['track']['artist']['name']
+                             'Keywords'    =>  results['track']['name'].force_encoding('utf-8') + "  " + results['track']['artist']['name'].force_encoding('utf-8')
                             }
 
       song_file = Hash.from_xml(res.body)
