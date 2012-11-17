@@ -149,7 +149,23 @@ class PlaylistsController < ApplicationController
         @output.last['amazon'] ||= []
 
         if song_file['ItemSearchResponse']['Items']['Item'].kind_of?(Array)
-          @output.last['amazon'] << song_file['ItemSearchResponse']['Items']['Item'].first
+
+          song_file['ItemSearchResponse']['Items']['Item'].each do |song|
+
+            puts song['ItemAttributes']['Title'].downcase.gsub(/[^a-z ]/, '').gsub(/ /, '-') + " vs. " + results['track']['name'].downcase.gsub(/[^a-z ]/, '').gsub(/ /, '-')
+
+            if song['ItemAttributes']['Title'].downcase.gsub(/[^a-z ]/, '').gsub(/ /, '-') == results['track']['name'].downcase.gsub(/[^a-z ]/, '').gsub(/ /, '-')
+              # we found a good match so save it.
+              @output.last['amazon'] << song
+              break
+            end
+
+          end #end of loop
+
+          if @output.last['amazon'].length == 0
+            @output.last['amazon'] << song_file['ItemSearchResponse']['Items']['Item'].first
+          end
+
         else
           @output.last['amazon'] << song_file['ItemSearchResponse']['Items']['Item']
         end
