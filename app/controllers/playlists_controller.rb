@@ -80,7 +80,7 @@ class PlaylistsController < ApplicationController
       format.html { redirect_to playlists_url }
       format.json { head :no_content }
     end
-  end
+  end 
 
   def get_list
 
@@ -89,95 +89,49 @@ class PlaylistsController < ApplicationController
   def generate
     require 'open-uri'
 
-    api_key = "AKIAIJGC6M6FDMR3IYYA"
-    api_secret = "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"
-
     @output = []
 
+    #Create a new playlist we'll be returning statuses to.
+    @playlist = Playlist.new
+    @playlist.input_string = params['playlists']
+    @playlist.save!
+
     i = 0;
+
+    #queue up each line:
     params['playlists'].each_line do |line|
-
-      if i % 10
-        sleep(1) #throttle to avoid hitting the max limit...
-      end
-      i+=1
-        
-      track_id = line.strip.split('/').last
-
-      #contact spotify's API
-      @output << {'spotify' => nil, 'amazon' => []}
-
-      url = "http://ws.spotify.com/lookup/1/?uri=spotify:track:#{track_id}"
-      @output.last['url'] = url
-
-      puts url
-
-      begin
-        response = open(url).read 
-      rescue
-        puts "Couldn't process #{url}"
-        puts $!
-        next
-      end
-
-      results = Hash.from_xml(response)
-
-      #sometimes spotify returns an array for artist, just grab the first one
-      if results['track']['artist'].kind_of?(Array)
-        results['track']['artist'] = results['track']['artist'][0]
-      end
-
-      @output.last['spotify'] =results
-
-      req = Vacuum.new
-      req.configure key:    api_key,
-                    secret:  api_secret,
-                    tag:    'robotpolisher-20'
-
-      res = req.get query: { 'Operation'   => 'ItemSearch',
-                             'SearchIndex' => 'MP3Downloads',
-                             'ResponseGroup' => 'ItemAttributes,Tracks,Images',
-                             'Keywords'    =>  results['track']['name'].force_encoding('utf-8') + "  " + results['track']['artist']['name'].force_encoding('utf-8')
-                            }
-
-      song_file = Hash.from_xml(res.body.force_encoding('utf-8'))
-      num_found = song_file['ItemSearchResponse']['Items']['TotalResults']
-
-
-     unless  song_file['ItemSearchResponse']['Items']['Item'].nil?
-
-        @output.last['amazon'] ||= []
-
-        if song_file['ItemSearchResponse']['Items']['Item'].kind_of?(Array)
-
-          song_file['ItemSearchResponse']['Items']['Item'].each do |song|
-
-            puts song['ItemAttributes']['Title'].downcase.gsub(/[^a-z ]/, '').gsub(/ /, '-') + " vs. " + results['track']['name'].downcase.gsub(/[^a-z ]/, '').gsub(/ /, '-')
-
-            if song['ItemAttributes']['Title'].downcase.gsub(/[^a-z ]/, '').gsub(/ /, '-') == results['track']['name'].downcase.gsub(/[^a-z ]/, '').gsub(/ /, '-')
-              # we found a good match so save it.
-              @output.last['amazon'] << song
-              break
-            end
-
-          end #end of loop
-
-          if @output.last['amazon'].length == 0
-            @output.last['amazon'] << song_file['ItemSearchResponse']['Items']['Item'].first
-          end
-
-        else
-          @output.last['amazon'] << song_file['ItemSearchResponse']['Items']['Item']
-        end
-      else
-          puts "not found by amazon #{results['track']['name'] }"
-      end
-
-
+      i += 1
+      # queue up for processing
+      TrackLookup.perform_async(line, @playlist.id, i)
+      
     end
 
+    #save the number of tracks so we can be sure it's finished.
+    @playlist.num_tracks = i
+    @playlist.status = "SUBMITTED"
+    @playlist.save!
 
-    @theout = @output
+    redirect_to :action => 'wait', :id => @playlist.id
+
+  end
+
+  # 
+  # This page will check to see if processing is done and if not reload itself.
+  # 
+  # @return [type] [description]
+  def wait
+    @playlist = Playlist.find(params[:id])
+
+    if @playlist.tracks and @playlist.tracks.length == @playlist.num_tracks
+      redirect_to :action => 'show', :id => @playlist.id
+    else
+
+      respond_to do |format|
+        format.html
+        format.json { render json: @playlist }
+      end
+    end
+
   end
 
 end

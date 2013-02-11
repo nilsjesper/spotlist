@@ -16,6 +16,9 @@
           %p  
             Click on your purchase links below.
 
+      %p#notice
+        = notice
+
     %section
       %table(border="1")
         %tr
@@ -29,7 +32,7 @@
             Detail Page
           %th
             Purchase
-          - @theout.each do |track|
+          - @playlist.tracks.each do |track|
             - track['amazon'].each do |album|
               %tr
                 %td
@@ -68,3 +71,6 @@
         %p
           Copyright 2012 Martin Olson
           %a{ :href=>'mailto:martin@robotpolishers.com'} Get In Touch
+
+/ = link_to 'Edit', edit_playlist_path(@playlist)
+/ = link_to 'Back', playlists_path

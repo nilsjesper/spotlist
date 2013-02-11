@@ -61,4 +61,12 @@ Spotlist::Application.routes.draw do
 root :to => 'playlists#get_list'
 match 'generate' => 'playlists#generate'
 
+match 'playlists/:id/wait' => 'playlists#wait'
+
+#map.wait 'playlists/wait', :controller => :playlists, :action => :wait
+
+require 'sidekiq/web'
+mount Sidekiq::Web => '/sidekiq'
+
+
 end

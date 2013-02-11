@@ -1,0 +1,28 @@
+!!! 5
+%html
+  %head
+    %title= "Waiting to Process"
+    %meta{"http-equiv" => "refresh", :content => "2"}
+    %meta{ :content => "", :name => "description" }
+    %meta{ :content => "", :name => "author" }
+    %meta{ :content => "3 days", :name => "revisit-after" }
+    %link{ :href => "http://creativecommons.org/licenses/by/3.0/", :rel => "license", :title => "Creative Commons Attribution 3.0 Unported License" }
+  %body
+    %header
+
+    %section
+      %article
+        %header
+          %h2= "Processing Your Playlist"
+        .wait-quantity
+          - if @playlist.tracks
+            = "#{@playlist.tracks.length} of #{@playlist.num_tracks}"
+        = link_to "Did processnig time out?", "/playlists/#{@playlist.id}"
+                            
+      %footer
+        %p
+          Copyright 2012 Martin Olson
+          %a{ :href=>'mailto:martin@robotpolishers.com'} Get In Touch
+
+/ = link_to 'Edit', edit_playlist_path(@playlist)
+/ = link_to 'Back', playlists_path
